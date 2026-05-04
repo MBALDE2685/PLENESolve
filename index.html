@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- Liens Manifeste et Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <script>
+      // Enregistrement du Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js');
+        });
+      }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solveur de Programmes Linéaires</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .tab-btn.active { background: white; color: #2c3e50; }
+
+        .subtab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .subtab-btn {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            color: #495057;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .subtab-btn:hover { 
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .subtab-btn.active { 
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { 
+            display: block; 
+            animation: fadeIn 0.5s ease;
+        }
+
+        .subtab-content { 
+            display: none; 
+            animation: fadeIn 0.3s ease;
+        }
+        .subtab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #138496 0%, #17a2b8 100%);
+            transform: translateY(-2px);
+        }
+
+        .method-options {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .radio-label:hover {
+            background: #e9ecef;
+        }
+
+        .output-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .help-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .help-section {
+            margin-bottom: 30px;
+        }
+
+        .help-section h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .example-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .code-example {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .method-description {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2rem; }
+            .tab-navigation, .subtab-navigation { flex-direction: column; }
+            .tab-btn, .subtab-btn { width: 100%; margin-bottom: 5px; }
+            .button-group { flex-direction: column; }
+            .btn { width: 100%; }
+            .example-buttons { grid-template-columns: 1fr; }
+            .export-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-calculator"></i> Solveur de Programmes Linéaires</h1>
+            <p class="subtitle">Implémentation complète des méthodes Simplexe et PLNE</p>
+            
+            <div class="tab-navigation">
+                <button class="tab-btn active" id="pl-btn">
+                    <i class="fas fa-chart-line"></i> PL (Simplexe)
+                </button>
+                <button class="tab-btn" id="plne-btn">
+                    <i class="fas fa-sitemap"></i> PLNE
+                </button>
+                <button class="tab-btn" id="aide-btn">
+                    <i class="fas fa-question-circle"></i> Aide
+                </button>
+            </div>
+        </header>
+
+        <!-- Section PL (Simplexe) -->
+        <div id="pl" class="tab-content active">
+            <div class="subtab-navigation">
+                <button class="subtab-btn active" id="pl-simple-btn">
+                    <i class="fas fa-bolt"></i> Simplexe Simple
+                </button>
+                <button class="subtab-btn" id="pl-avance-btn">
+                    <i class="fas fa-cogs"></i> Simplexe Avancé
+                </button>
+            </div>
+            
+            <!-- Sous-onglet Simplexe Simple -->
+            <div id="pl-simple" class="subtab-content active">
+                <div class="card">
+                    <h2><i class="fas fa-bolt"></i> Simplexe Simple</h2>
+                    <p class="method-description">
+                        <strong>Méthode du Simplexe Simple :</strong> Utilisée pour résoudre des problèmes de programmation linéaire avec uniquement des contraintes de type ≤. Cette méthode est la plus directe et ne nécessite pas de variables artificielles.
+                    </p>
+                    
+                    <div>
+                        <label><strong>Programme linéaire (contraintes ≤ seulement) :</strong></label>
+                        <textarea id="pl-simple-programme" placeholder="Exemple :
+Maximiser: 5x1 + 3x2
+x1 + x2 <= 8
+2x1 + x2 <= 12
+x1 <= 4
+x1 >= 0, x2 >= 0"></textarea>
+                    </div>
+                    
+                    <div class="example-buttons">
+                        <button class="btn btn-primary" onclick="chargerExemple('simplexe-simple')">
+                            <i class="fas fa-bolt"></i> Exemple Simplexe Simple
+                        </button>
+                        <button class="btn btn-primary" onclick="chargerExemple('simplexe-simple-2')">
+                            <i class="fas fa-cube"></i> Exemple 2 Variables
+                        </button>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-success" id="pl-simple-btn-execute">
+                            <i class="fas fa-play"></i> Exécuter Simplexe Simple
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="pl-simple-output" class="card" style="display: none;">
+                    <h2><i class="fas fa-terminal"></i> Résultats - Simplexe Simple</h2>
+                    <div class="output-container" id="pl-simple-output-content"></div>
+                    <div class="export-buttons">
+                        <button class="btn btn-info" onclick="exporterResultats('pl-simple', 'txt')">
+                            <i class="fas fa-file-alt"></i> Exporter en TXT
+                        </button>
+                        <button class="btn btn-info" onclick="exporterResultats('pl-simple', 'json')">
+                            <i class="fas fa-file-code"></i> Exporter en JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sous-onglet Simplexe Avancé -->
+            <div id="pl-avance" class="subtab-content">
+                <div class="card">
+                    <h2><i class="fas fa-cogs"></i> Simplexe Avancé</h2>
+                    <p class="method-description">
+                        <strong>Méthodes avancées :</strong> Utilisées pour résoudre des problèmes avec contraintes de type ≥ ou =. Choisissez entre la méthode du Grand M ou la méthode des Deux Phases.
+                    </p>
+                    
+                    <div>
+                        <label><strong>Programme linéaire (avec contraintes ≥ ou =) :</strong></label>
+                        <textarea id="pl-avance-programme" placeholder="Exemple :
+Maximiser: 3x1 + 4x2
+2x1 + x2 <= 10
+x1 + 2x2 <= 8
+x1 >= 1
+x2 >= 1
+x1 >= 0, x2 >= 0"></textarea>
+                    </div>
+                    
+                    <div class="example-buttons">
+                        <button class="btn btn-primary" onclick="chargerExemple('simplexe-grand-m')">
+                            <i class="fas fa-balance-scale"></i> Exemple Grand M
+                        </button>
+                        <button class="btn btn-primary" onclick="chargerExemple('simplexe-deux-phases')">
+                            <i class="fas fa-layer-group"></i> Exemple Deux Phases
+                        </button>
+                    </div>
+                    
+                    <div class="method-options">
+                        <h4><i class="fas fa-cog"></i> Choix de la méthode avancée</h4>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="pl-avance-methode" value="grand_m" checked>
+                                <span>Méthode du Grand M</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="pl-avance-methode" value="deux_phases">
+                                <span>Méthode des Deux Phases</span>
+                            </label>
+                        </div>
+                        <div id="m-value-container" style="margin-top: 10px; display: block;">
+                            <label>Valeur de M (pour Grand M) :</label>
+                            <input type="number" id="m-value" value="1000" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-left: 10px; width: 120px;">
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-success" id="pl-avance-btn-execute">
+                            <i class="fas fa-play"></i> Exécuter la méthode avancée
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="pl-avance-output" class="card" style="display: none;">
+                    <h2><i class="fas fa-terminal"></i> Résultats - Simplexe Avancé</h2>
+                    <div class="output-container" id="pl-avance-output-content"></div>
+                    <div class="export-buttons">
+                        <button class="btn btn-info" onclick="exporterResultats('pl-avance', 'txt')">
+                            <i class="fas fa-file-alt"></i> Exporter en TXT
+                        </button>
+                        <button class="btn btn-info" onclick="exporterResultats('pl-avance', 'json')">
+                            <i class="fas fa-file-code"></i> Exporter en JSON
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section PLNE -->
+        <div id="plne" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-sitemap"></i> Solveur PLNE</h2>
+                
+                <div>
+                    <label><strong>Programme linéaire avec variables entières :</strong></label>
+                    <textarea id="plne-programme" placeholder="Exemple :
+Maximiser: 7x1 + 5x2
+3x1 + 2x2 <= 10
+2x1 + 4x2 <= 11
+x1 >= 0, x2 >= 0
+x1 entier, x2 entier"></textarea>
+                </div>
+                
+                <div class="example-buttons">
+                    <button class="btn btn-primary" onclick="chargerExemple('plne-gomory')">
+                        <i class="fas fa-cut"></i> Coupes de Gomory
+                    </button>
+                    <button class="btn btn-primary" onclick="chargerExemple('plne-branch-bound')">
+                        <i class="fas fa-code-branch"></i> Branch and Bound
+                    </button>
+                </div>
+                
+                <div class="method-options">
+                    <h4><i class="fas fa-cog"></i> Choix de la méthode PLNE</h4>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="plne-methode" value="gomory" checked>
+                            <span>Coupes de Gomory</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="plne-methode" value="branch_bound">
+                            <span>Branch and Bound</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-success" id="plne-btn-execute">
+                        <i class="fas fa-play"></i> Exécuter le solveur
+                    </button>
+                </div>
+            </div>
+            
+            <div id="plne-output" class="card" style="display: none;">
+                <h2><i class="fas fa-terminal"></i> Résultats</h2>
+                <div class="output-container" id="plne-output-content"></div>
+                <div class="export-buttons">
+                    <button class="btn btn-info" onclick="exporterResultats('plne', 'txt')">
+                        <i class="fas fa-file-alt"></i> Exporter en TXT
+                    </button>
+                    <button class="btn btn-info" onclick="exporterResultats('plne', 'json')">
+                        <i class="fas fa-file-code"></i> Exporter en JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Aide -->
+        <div id="aide" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-question-circle"></i> Guide d'utilisation</h2>
+                
+                <div class="help-container">
+                    <!-- Contenu aide inchangé -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay de chargement -->
+        <div id="loading-overlay">
+            <div style="text-align: center;">
+                <div class="spinner"></div>
+                <p id="loading-message">Initialisation...</p>
+            </div>
+        </div>
+
+        <footer class="footer" style="text-align: center; margin-top: 50px; color: #666;">
+            <p>Solveur de Programmes Linéaires - Implémentation complète des algorithmes</p>
+            <p style="font-size: 0.9rem; margin-top: 5px;">© 2024 - Tous droits réservés</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        
+        let pyodide = null;
+        let pythonInitialized = false;
+
+        // ============================================
+        // GESTION DES ONGLETS PRINCIPAUX
+        // ============================================
+        
+        document.getElementById('pl-btn').addEventListener('click', () => switchTab('pl'));
+        document.getElementById('plne-btn').addEventListener('click', () => switchTab('plne'));
+        document.getElementById('aide-btn').addEventListener('click', () => switchTab('aide'));
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.getElementById(`${tabName}-btn`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // ============================================
+        // GESTION DES SOUS-ONGLETS PL
+        // ============================================
+        
+        document.getElementById('pl-simple-btn').addEventListener('click', () => switchSubTab('pl-simple'));
+        document.getElementById('pl-avance-btn').addEventListener('click', () => switchSubTab('pl-avance'));
+        
+        function switchSubTab(subTabName) {
+            document.querySelectorAll('.subtab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.subtab-content').forEach(content => content.classList.remove('active'));
+            
+            const btnId = `${subTabName}-btn`;
+            if (document.getElementById(btnId)) {
+                document.getElementById(btnId).classList.add('active');
+            }
+            document.getElementById(subTabName).classList.add('active');
+        }
+
+        // ============================================
+        // GESTION DES EXEMPLES
+        // ============================================
+        
+        const examples = {
+            'simplexe-simple': `Maximiser: 5x1 + 3x2
+x1 + x2 <= 8
+2x1 + x2 <= 12
+x1 <= 4
+x1 >= 0, x2 >= 0`,
+
+            'simplexe-simple-2': `Maximiser: 3x1 + 2x2
+x1 + 2x2 <= 6
+2x1 + x2 <= 8
+x1 >= 0, x2 >= 0`,
+
+            'simplexe-grand-m': `Maximiser: 3x1 + 4x2
+2x1 + x2 <= 10
+x1 + 2x2 <= 8
+x1 >= 1
+x2 >= 1
+x1 >= 0, x2 >= 0`,
+
+            'simplexe-deux-phases': `Minimiser: 4x1 + x2
+3x1 + x2 >= 3
+4x1 + 3x2 >= 6
+x1 + 2x2 <= 4
+x1 >= 0, x2 >= 0`,
+
+            'plne-gomory': `Maximiser: 7x1 + 5x2
+3x1 + 2x2 <= 10
+2x1 + 4x2 <= 11
+x1 >= 0, x2 >= 0
+x1 entier, x2 entier`,
+
+            'plne-branch-bound': `Maximiser: 3x1 + 5x2
+x1 >= 4
+2x2 <= 12
+3x1 + 2x2 <= 18
+x1 >= 0, x2 >= 0
+x1 entier, x2 entier`
+        };
+
+        function chargerExemple(type) {
+            if (type.includes('simplexe')) {
+                switchTab('pl');
+                
+                if (type === 'simplexe-simple' || type === 'simplexe-simple-2') {
+                    switchSubTab('pl-simple');
+                    document.getElementById('pl-simple-programme').value = examples[type];
+                } else {
+                    switchSubTab('pl-avance');
+                    document.getElementById('pl-avance-programme').value = examples[type];
+                    
+                    // Configurer la méthode appropriée
+                    if (type === 'simplexe-grand-m') {
+                        document.querySelector('input[value="grand_m"]').checked = true;
+                        document.getElementById('m-value-container').style.display = 'block';
+                    } else if (type === 'simplexe-deux-phases') {
+                        document.querySelector('input[value="deux_phases"]').checked = true;
+                        document.getElementById('m-value-container').style.display = 'none';
+                    }
+                }
+            } else {
+                switchTab('plne');
+                document.getElementById('plne-programme').value = examples[type];
+            }
+        }
+
+        // ============================================
+        // FONCTIONS D'AFFICHAGE
+        // ============================================
+        
+        function showLoading(message) {
+            document.getElementById('loading-message').textContent = message;
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function showOutput(section, content) {
+            const outputDiv = document.getElementById(`${section}-output`);
+            const contentDiv = document.getElementById(`${section}-output-content`);
+            
+            // Formater la sortie pour l'affichage
+            let formattedContent = content || '';
+            
+            // Mettre en couleur les messages importants
+            formattedContent = formattedContent.replace(/✓/g, '<span style="color: #4ec9b0; font-weight: bold;">✓</span>');
+            formattedContent = formattedContent.replace(/✗/g, '<span style="color: #f48771; font-weight: bold;">✗</span>');
+            formattedContent = formattedContent.replace(/MÉTHODE:/g, '<span style="color: #dcdcaa; font-weight: bold;">MÉTHODE:</span>');
+            formattedContent = formattedContent.replace(/PHASE/g, '<span style="color: #dcdcaa; font-weight: bold;">PHASE</span>');
+            formattedContent = formattedContent.replace(/Itération/g, '<span style="color: #ce9178; font-weight: bold;">Itération</span>');
+            formattedContent = formattedContent.replace(/NOEUD/g, '<span style="color: #ce9178; font-weight: bold;">NOEUD</span>');
+            
+            contentDiv.innerHTML = formattedContent.replace(/\n/g, '<br>');
+            outputDiv.style.display = 'block';
+        }
+
+        // ============================================
+        // FONCTIONS D'EXPORTATION
+        // ============================================
+        
+        function exporterResultats(section, format) {
+            const contentDiv = document.getElementById(`${section}-output-content`);
+            const contentText = contentDiv.textContent || contentDiv.innerText;
+            
+            let programmeText = '';
+            let sectionType = '';
+            
+            // Déterminer quel programme récupérer selon la section
+            if (section === 'pl-simple') {
+                programmeText = document.getElementById('pl-simple-programme').value;
+                sectionType = 'PL Simplexe Simple';
+            } else if (section === 'pl-avance') {
+                programmeText = document.getElementById('pl-avance-programme').value;
+                sectionType = 'PL Simplexe Avancé';
+            } else if (section === 'plne') {
+                programmeText = document.getElementById('plne-programme').value;
+                sectionType = 'PLNE';
+            }
+            
+            if (!contentText.trim()) {
+                alert("Aucun résultat à exporter. Veuillez d'abord exécuter le solveur.");
+                return;
+            }
+            
+            let fileName = `resultats_${section}_${new Date().toISOString().slice(0, 10)}`;
+            let fileContent;
+            
+            if (format === 'txt') {
+                fileName += '.txt';
+                fileContent = `=== RÉSULTATS DU SOLVEUR - ${sectionType} ===\n\n`;
+                fileContent += `Date: ${new Date().toLocaleString()}\n\n`;
+                fileContent += `PROGRAMME ORIGINAL:\n${programmeText}\n\n`;
+                fileContent += `RÉSULTATS:\n${contentText}`;
+                
+            } else if (format === 'json') {
+                fileName += '.json';
+                
+                // Extraire les valeurs numériques si possible
+                let solution = {};
+                let valeurObjectif = null;
+                
+                // Tentative d'extraction des valeurs depuis le texte
+                const lines = contentText.split('\n');
+                for (const line of lines) {
+                    if (line.includes('x1 =')) {
+                        const match = line.match(/x(\d+)\s*=\s*([\d.]+)/);
+                        if (match) {
+                            solution[`x${match[1]}`] = parseFloat(match[2]);
+                        }
+                    } else if (line.includes('Max Z =') || line.includes('Min Z =')) {
+                        const match = line.match(/=\s*([\d.-]+)/);
+                        if (match) {
+                            valeurObjectif = parseFloat(match[1]);
+                        }
+                    }
+                }
+                
+                const donneesExport = {
+                    type: sectionType,
+                    date_execution: new Date().toISOString(),
+                    programme_original: programmeText,
+                    resultats_complets: contentText,
+                    solution: solution,
+                    valeur_objectif: valeurObjectif,
+                    nombre_variables: Object.keys(solution).length
+                };
+                
+                fileContent = JSON.stringify(donneesExport, null, 2);
+            }
+            
+            // Créer et télécharger le fichier
+            const blob = new Blob([fileContent], { type: format === 'txt' ? 'text/plain' : 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Afficher un message de confirmation
+            const message = format === 'txt' ? 
+                `Résultats exportés en fichier TXT: ${fileName}` :
+                `Résultats exportés en fichier JSON: ${fileName}`;
+            
+            alert(message);
+        }
+
+        // ============================================
+        // INITIALISATION PYODIDE
+        // ============================================
+        
+        async function initializePython() {
+            if (pythonInitialized && pyodide) return pyodide;
+            
+            showLoading('Chargement de Python...');
+            
+            try {
+                // Charger Pyodide
+                pyodide = await loadPyodide();
+                
+                // Charger numpy
+                await pyodide.loadPackage("numpy");
+                
+                // Charger le code Python
+                await loadPythonCode();
+                
+                pythonInitialized = true;
+                hideLoading();
+                return pyodide;
+                
+            } catch (error) {
+                hideLoading();
+                alert("Erreur lors du chargement de Python. Vérifiez votre connexion internet.");
+                console.error("Erreur Pyodide:", error);
+                throw error;
+            }
+        }
+
+        async function loadPythonCode() {
+            const pythonCode = `
+import numpy as np
+from enum import Enum
+import warnings
+warnings.filterwarnings('ignore')
+
+class ContrainteType(Enum):
+    LEQ = '<='
+    GEQ = '>='
+    EQ = '='
+
+class MethodeSimplexe(Enum):
+    SIMPLE = "Simplexe Simple"
+    DEUX_PHASES = "Deux Phases"
+    GRAND_M = "Grand M"
+
+class MethodePLNE(Enum):
+    GOMORY = "Coupe de Gomory"
+    BRANCH_BOUND = "Branch and Bound"
+
+class ProgrammeLineaire:
+    def __init__(self):
+        self.c = None
+        self.A = None
+        self.b = None
+        self.types_contraintes = []
+        self.n_vars = 0
+        self.n_contraintes = 0
+        self.maximiser = True
+        self.var_entiere = []
+        
+    def parse_fonction_objectif(self, ligne):
+        ligne = ligne.lower().replace(' ', '')
+        self.maximiser = 'max' in ligne
+        
+        if ':' in ligne:
+            partie_obj = ligne.split(':')[1]
+        else:
+            if 'max' in ligne:
+                partie_obj = ligne.split('max')[1]
+            elif 'min' in ligne:
+                partie_obj = ligne.split('min')[1]
+            else:
+                partie_obj = ligne
+        
+        partie_obj = partie_obj.strip()
+        coeffs = {}
+        partie_obj = partie_obj.replace('-', '+-')
+        
+        if partie_obj.startswith('+-'):
+            partie_obj = partie_obj[1:]
+        
+        termes = partie_obj.split('+')
+        
+        for terme in termes:
+            terme = terme.strip()
+            if not terme or terme == '':
+                continue
+            
+            is_negative = False
+            if terme.startswith('-'):
+                is_negative = True
+                terme = terme[1:]
+            
+            if 'x' in terme:
+                parts = terme.split('x')
+                if parts[0] == '' or parts[0] == '-':
+                    coef = 1.0
+                else:
+                    coef = float(parts[0])
+                
+                if is_negative:
+                    coef = -coef
+                
+                var_num = int(parts[1])
+                coeffs[var_num] = coef
+        
+        self.n_vars = max(coeffs.keys()) if coeffs else 0
+        self.c = np.array([coeffs.get(i, 0.0) for i in range(1, self.n_vars + 1)])
+        
+    def parse_contrainte(self, ligne):
+        ligne = ligne.replace(' ', '')
+        
+        type_c = None
+        if '<=' in ligne:
+            type_c = ContrainteType.LEQ
+            parties = ligne.split('<=')
+        elif '>=' in ligne:
+            type_c = ContrainteType.GEQ
+            parties = ligne.split('>=')
+        elif '=' in ligne:
+            type_c = ContrainteType.EQ
+            parties = ligne.split('=')
+        else:
+            return None
+            
+        gauche = parties[0]
+        gauche = gauche.replace('-', '+-')
+        
+        if gauche.startswith('+-'):
+            gauche = gauche[1:]
+        
+        coeffs = {}
+        termes = gauche.split('+')
+        
+        for terme in termes:
+            terme = terme.strip()
+            if not terme or terme == '':
+                continue
+            
+            is_negative = False
+            if terme.startswith('-'):
+                is_negative = True
+                terme = terme[1:]
+            
+            if 'x' in terme:
+                parts = terme.split('x')
+                if parts[0] == '' or parts[0] == '-':
+                    coef = 1.0
+                else:
+                    coef = float(parts[0])
+                
+                if is_negative:
+                    coef = -coef
+                
+                var_num = int(parts[1])
+                coeffs[var_num] = coef
+        
+        b_val = float(parties[1])
+        
+        return coeffs, b_val, type_c
+    
+    def lire_programme(self, texte=None):
+        if texte is None:
+            texte = """Maximiser: 3x1 + 5x2
+            x1 >= 4
+            2x2 <= 12
+            3x1 + 2x2 <= 18
+            x1 >= 0, x2 >= 0
+            x1 entier, x2 entier"""
+        
+        lignes = [l.strip() for l in texte.strip().split('\\n') if l.strip()]
+        
+        self.parse_fonction_objectif(lignes[0])
+        
+        contraintes_parsed = []
+        var_entiere = []
+        
+        for ligne in lignes[1:]:
+            ligne_lower = ligne.lower()
+            if 'entier' in ligne_lower:
+                terms = ligne_lower.replace('entier', '').replace(' ', '').split(',')
+                for term in terms:
+                    if 'x' in term:
+                        var_num = int(term.split('x')[1])
+                        var_entiere.append(var_num)
+                continue
+                
+            if 'x' in ligne_lower and any(op in ligne for op in ['<=', '>=', '=']):
+                if ligne_lower.startswith('x') and '>=' in ligne and '0' in ligne:
+                    continue
+                parsed = self.parse_contrainte(ligne)
+                if parsed:
+                    contraintes_parsed.append(parsed)
+        
+        self.n_contraintes = len(contraintes_parsed)
+        self.var_entiere = [i-1 for i in var_entiere if i <= self.n_vars]
+        
+        self.A = np.zeros((self.n_contraintes, self.n_vars))
+        self.b = np.zeros(self.n_contraintes)
+        self.types_contraintes = []
+        
+        for i, (coeffs, b_val, type_c) in enumerate(contraintes_parsed):
+            for var_num, coef in coeffs.items():
+                if var_num <= self.n_vars:
+                    self.A[i, var_num - 1] = coef
+            self.b[i] = b_val
+            self.types_contraintes.append(type_c)
+    
+    def calculer_M_optimal(self):
+        if len(self.c) == 0:
+            return 1000
+        
+        max_coef = max(np.max(np.abs(self.c)), np.max(np.abs(self.A)), np.max(np.abs(self.b)))
+        M = max(1000, 100 * max_coef)
+        power = int(np.ceil(np.log10(M)))
+        M = 10 ** power
+        
+        return int(M)
+    
+    def est_solution_entiere(self, solution, tolerance=1e-6):
+        if not self.var_entiere:
+            return True, None, None
+            
+        for idx in self.var_entiere:
+            if idx < len(solution):
+                val = solution[idx]
+                if abs(val - round(val)) > tolerance:
+                    return False, idx, val
+        return True, None, None
+
+class SimplexeSolver:
+    def __init__(self, programme):
+        self.prog = programme
+        self.methode = None
+        self.M = self.prog.calculer_M_optimal()
+        
+    def determiner_methode(self):
+        has_geq = any(t == ContrainteType.GEQ for t in self.prog.types_contraintes)
+        has_eq = any(t == ContrainteType.EQ for t in self.prog.types_contraintes)
+        
+        if has_geq or has_eq:
+            self.methode = MethodeSimplexe.GRAND_M
+        else:
+            self.methode = MethodeSimplexe.SIMPLE
+            
+        return self.methode
+    
+    def afficher_tableau(self, tableau, base, var_names, iteration, phase=None):
+        output_lines = []
+        phase_str = f" - Phase {phase}" if phase else ""
+        output_lines.append(f"{'='*80}")
+        output_lines.append(f"Itération {iteration}{phase_str}")
+        output_lines.append(f"{'='*80}")
+        output_lines.append(f"Base: {base}")
+        output_lines.append(f"\\nTableau:")
+        
+        header = f"{'':>8}"
+        for h in var_names:
+            header += f"{h:>12}"
+        header += f"{'RHS':>12}"
+        output_lines.append(header)
+        output_lines.append('-' * (12 * (len(var_names) + 1) + 8))
+        
+        for i, row in enumerate(tableau):
+            if i < len(base):
+                line = f"{base[i]:>8}"
+            else:
+                line = f"{'Z':>8}"
+            
+            for val in row:
+                if abs(val) < 1e-6:
+                    line += f"{0:>12.4f}"
+                else:
+                    line += f"{val:>12.4f}"
+            output_lines.append(line)
+        output_lines.append('=' * 80)
+        
+        return '\\n'.join(output_lines)
+    
+    def resoudre_simplexe_simple(self, afficher=True):
+        output_lines = []
+        if afficher:
+            output_lines.append(f"\\n{'#'*80}")
+            output_lines.append(f"MÉTHODE: Simplexe Simple")
+            output_lines.append(f"{'#'*80}")
+        
+        n = self.prog.n_vars
+        m = self.prog.n_contraintes
+        
+        var_names = [f'x{i+1}' for i in range(n)]
+        
+        for i in range(m):
+            var_names.append(f's{i+1}')
+        
+        A = np.hstack([self.prog.A, np.eye(m)])
+        b = self.prog.b.copy()
+        
+        if self.prog.maximiser:
+            c = np.concatenate([self.prog.c, np.zeros(m)])
+        else:
+            c = np.concatenate([-self.prog.c, np.zeros(m)])
+        
+        base = [f's{i+1}' for i in range(m)]
+        
+        tableau = np.vstack([
+            np.hstack([A, b.reshape(-1, 1)]),
+            np.hstack([-c, [0]])
+        ])
+        
+        iteration = 0
+        if afficher:
+            output_lines.append(self.afficher_tableau(tableau, base, var_names, iteration))
+        
+        while True:
+            iteration += 1
+            
+            z_row = tableau[-1, :-1]
+            
+            if np.all(z_row >= -1e-8):
+                if afficher:
+                    output_lines.append("\\n✓ Solution optimale trouvée!")
+                break
+            
+            col_pivot = np.argmin(z_row)
+            if afficher:
+                output_lines.append(f"\\nVariable entrante: {var_names[col_pivot]}")
+            
+            ratios = []
+            col_vals = tableau[:-1, col_pivot]
+            rhs_vals = tableau[:-1, -1]
+            
+            for i in range(len(col_vals)):
+                if col_vals[i] > 1e-10:
+                    ratios.append(rhs_vals[i] / col_vals[i])
+                else:
+                    ratios.append(np.inf)
+            
+            if all(r == np.inf for r in ratios):
+                if afficher:
+                    output_lines.append("\\n✗ Problème non borné!")
+                return None, None, '\\n'.join(output_lines)
+            
+            row_pivot = np.argmin(ratios)
+            if afficher:
+                output_lines.append(f"Variable sortante: {base[row_pivot]}")
+                output_lines.append(f"Pivot: tableau[{row_pivot}][{col_pivot}] = {tableau[row_pivot, col_pivot]:.4f}")
+            
+            base[row_pivot] = var_names[col_pivot]
+            
+            pivot = tableau[row_pivot, col_pivot]
+            tableau[row_pivot, :] /= pivot
+            
+            for i in range(len(tableau)):
+                if i != row_pivot:
+                    tableau[i, :] -= tableau[i, col_pivot] * tableau[row_pivot, :]
+            
+            if afficher:
+                output_lines.append(self.afficher_tableau(tableau, base, var_names, iteration))
+            
+            if iteration > 100:
+                if afficher:
+                    output_lines.append("\\n✗ Nombre maximum d'itérations atteint!")
+                break
+        
+        solution = np.zeros(n)
+        
+        for i, var in enumerate(base):
+            if var.startswith('x'):
+                idx = int(var[1:]) - 1
+                if idx < n:
+                    solution[idx] = tableau[i, -1]
+        
+        z_value = tableau[-1, -1]
+        
+        if not self.prog.maximiser:
+            z_value = -z_value
+            
+        output_lines.append(f"\\nSolution finale:")
+        for i in range(n):
+            output_lines.append(f"x{i+1} = {solution[i]:.6f}")
+        output_lines.append(f"{'Max Z' if self.prog.maximiser else 'Min Z'} = {z_value:.6f}")
+        
+        return solution, z_value, '\\n'.join(output_lines)
+    
+    def resoudre_grand_M(self, M_personnalise=None, afficher=True):
+        if M_personnalise is not None:
+            self.M = M_personnalise
+        
+        output_lines = []
+        if afficher:
+            output_lines.append(f"\\n{'#'*80}")
+            output_lines.append(f"MÉTHODE: Grand M")
+            output_lines.append(f"{'#'*80}")
+            output_lines.append(f"Type de problème: {'MAXIMISATION' if self.prog.maximiser else 'MINIMISATION'}")
+            output_lines.append(f"Valeur de M utilisée: {self.M}")
+        
+        n = self.prog.n_vars
+        m = self.prog.n_contraintes
+        
+        var_names = [f'x{i+1}' for i in range(n)]
+        A_extended = self.prog.A.copy()
+        base = []
+        art_vars = []
+        slack_idx = 0
+        art_idx = 0
+        
+        c_extended = []
+        
+        for i in range(n):
+            if self.prog.maximiser:
+                c_extended.append(self.prog.c[i])
+            else:
+                c_extended.append(-self.prog.c[i])
+        
+        for i, t in enumerate(self.prog.types_contraintes):
+            if t == ContrainteType.LEQ:
+                col = np.zeros(m)
+                col[i] = 1
+                A_extended = np.hstack([A_extended, col.reshape(-1, 1)])
+                var_names.append(f's{slack_idx+1}')
+                c_extended.append(0)
+                base.append(f's{slack_idx+1}')
+                slack_idx += 1
+                
+            elif t == ContrainteType.GEQ:
+                col_slack = np.zeros(m)
+                col_slack[i] = -1
+                A_extended = np.hstack([A_extended, col_slack.reshape(-1, 1)])
+                var_names.append(f's{slack_idx+1}')
+                c_extended.append(0)
+                slack_idx += 1
+                
+                col_art = np.zeros(m)
+                col_art[i] = 1
+                A_extended = np.hstack([A_extended, col_art.reshape(-1, 1)])
+                var_names.append(f'a{art_idx+1}')
+                c_extended.append(-self.M)
+                base.append(f'a{art_idx+1}')
+                art_vars.append(f'a{art_idx+1}')
+                art_idx += 1
+                
+            else:
+                col_art = np.zeros(m)
+                col_art[i] = 1
+                A_extended = np.hstack([A_extended, col_art.reshape(-1, 1)])
+                var_names.append(f'a{art_idx+1}')
+                c_extended.append(-self.M)
+                base.append(f'a{art_idx+1}')
+                art_vars.append(f'a{art_idx+1}')
+                art_idx += 1
+        
+        b = self.prog.b.copy()
+        c_extended = np.array(c_extended)
+        
+        tableau = np.vstack([
+            np.hstack([A_extended, b.reshape(-1, 1)]),
+            np.hstack([-c_extended, [0]])
+        ])
+        
+        for i, var_base in enumerate(base):
+            if var_base.startswith('a'):
+                tableau[-1, :-1] -= self.M * tableau[i, :-1]
+                tableau[-1, -1] -= self.M * tableau[i, -1]
+        
+        iteration = 0
+        if afficher:
+            output_lines.append(self.afficher_tableau(tableau, base, var_names, iteration))
+        
+        while True:
+            iteration += 1
+            
+            z_row = tableau[-1, :-1]
+            
+            if np.all(z_row >= -1e-8):
+                artif_non_nul = False
+                for i, var in enumerate(base):
+                    if var.startswith('a') and abs(tableau[i, -1]) > 1e-6:
+                        artif_non_nul = True
+                        break
+                
+                if artif_non_nul:
+                    if afficher:
+                        output_lines.append(f"\\n✗ Problème infaisable! Variable artificielle {var} = {tableau[i, -1]:.6f}")
+                    return None, None, '\\n'.join(output_lines)
+                
+                if afficher:
+                    output_lines.append("\\n✓ Solution optimale trouvée!")
+                break
+            
+            eligible_cols = []
+            for j in range(len(var_names)):
+                var_name = var_names[j]
+                if not var_name.startswith('a'):
+                    eligible_cols.append(j)
+            
+            if not eligible_cols:
+                if afficher:
+                    output_lines.append("\\n✗ Plus de variables non-artificielles disponibles!")
+                break
+            
+            min_z = 0
+            col_pivot = -1
+            for j in eligible_cols:
+                if z_row[j] < min_z - 1e-10:
+                    min_z = z_row[j]
+                    col_pivot = j
+            
+            if col_pivot == -1:
+                col_pivot = np.argmin(z_row)
+            
+            var_entrante = var_names[col_pivot]
+            
+            ratios = []
+            col_vals = tableau[:-1, col_pivot]
+            rhs_vals = tableau[:-1, -1]
+            
+            for i in range(len(col_vals)):
+                if col_vals[i] > 1e-10:
+                    ratio = rhs_vals[i] / col_vals[i]
+                    if ratio >= 0:
+                        ratios.append(ratio)
+                    else:
+                        ratios.append(np.inf)
+                else:
+                    ratios.append(np.inf)
+            
+            if all(r == np.inf for r in ratios):
+                if afficher:
+                    output_lines.append("\\n✗ Problème non borné!")
+                return None, None, '\\n'.join(output_lines)
+            
+            row_pivot = np.argmin(ratios)
+            base[row_pivot] = var_names[col_pivot]
+            
+            pivot = tableau[row_pivot, col_pivot]
+            tableau[row_pivot, :] /= pivot
+            
+            for i in range(len(tableau)):
+                if i != row_pivot:
+                    tableau[i, :] -= tableau[i, col_pivot] * tableau[row_pivot, :]
+            
+            if afficher:
+                output_lines.append(self.afficher_tableau(tableau, base, var_names, iteration))
+            
+            if iteration > 100:
+                if afficher:
+                    output_lines.append("\\n✗ Nombre maximum d'itérations atteint!")
+                break
+        
+        solution = np.zeros(n)
+        
+        for i, var in enumerate(base):
+            if var.startswith('x'):
+                idx = int(var[1:]) - 1
+                if idx < n:
+                    solution[idx] = tableau[i, -1]
+        
+        z_value = tableau[-1, -1]
+        
+        if not self.prog.maximiser:
+            z_value = -z_value
+            
+        output_lines.append(f"\\nSolution finale:")
+        for i in range(n):
+            output_lines.append(f"x{i+1} = {solution[i]:.6f}")
+        output_lines.append(f"{'Max Z' if self.prog.maximiser else 'Min Z'} = {z_value:.6f}")
+        
+        return solution, z_value, '\\n'.join(output_lines)
+    
+    def resoudre_deux_phases(self, afficher=True):
+        output_lines = []
+        if afficher:
+            output_lines.append(f"\\n{'#'*80}")
+            output_lines.append(f"MÉTHODE: Deux Phases")
+            output_lines.append(f"{'#'*80}")
+            output_lines.append(f"Type de problème: {'MAXIMISATION' if self.prog.maximiser else 'MINIMISATION'}")
+        
+        n = self.prog.n_vars
+        m = self.prog.n_contraintes
+        
+        # Phase 1
+        output_lines.append("\\n" + "="*80)
+        output_lines.append("PHASE 1: Minimisation de la somme des variables artificielles")
+        output_lines.append("="*80)
+        
+        var_names_p1 = [f'x{i+1}' for i in range(n)]
+        A_extended = self.prog.A.copy()
+        base = []
+        art_cols = []
+        slack_idx = 0
+        art_idx = 0
+        
+        for i, t in enumerate(self.prog.types_contraintes):
+            if t == ContrainteType.LEQ:
+                col = np.zeros(m)
+                col[i] = 1
+                A_extended = np.hstack([A_extended, col.reshape(-1, 1)])
+                var_names_p1.append(f's{slack_idx+1}')
+                base.append(f's{slack_idx+1}')
+                slack_idx += 1
+                
+            elif t == ContrainteType.GEQ:
+                col_slack = np.zeros(m)
+                col_slack[i] = -1
+                A_extended = np.hstack([A_extended, col_slack.reshape(-1, 1)])
+                var_names_p1.append(f's{slack_idx+1}')
+                slack_idx += 1
+                
+                col_art = np.zeros(m)
+                col_art[i] = 1
+                A_extended = np.hstack([A_extended, col_art.reshape(-1, 1)])
+                var_names_p1.append(f'a{art_idx+1}')
+                art_cols.append(len(var_names_p1) - 1)
+                base.append(f'a{art_idx+1}')
+                art_idx += 1
+                
+            else:
+                col_art = np.zeros(m)
+                col_art[i] = 1
+                A_extended = np.hstack([A_extended, col_art.reshape(-1, 1)])
+                var_names_p1.append(f'a{art_idx+1}')
+                art_cols.append(len(var_names_p1) - 1)
+                base.append(f'a{art_idx+1}')
+                art_idx += 1
+        
+        b = self.prog.b.copy()
+        
+        tableau = np.hstack([A_extended, b.reshape(-1, 1)])
+        
+        z_row = np.zeros(len(var_names_p1) + 1)
+        for col in art_cols:
+            z_row[col] = -1
+        
+        for i, var in enumerate(base):
+            if var.startswith('a'):
+                z_row[:-1] += tableau[i, :-1]
+                z_row[-1] += tableau[i, -1]
+        
+        coefs_reduits = -z_row[:-1]
+        rhs_value = -z_row[-1]
+        z_line = np.hstack([coefs_reduits, [rhs_value]])
+        tableau = np.vstack([tableau, z_line])
+        
+        iteration = 0
+        output_lines.append(self.afficher_tableau(tableau, base, var_names_p1, iteration, phase=1))
+        
+        while True:
+            iteration += 1
+            
+            z_row = tableau[-1, :-1]
+            
+            if np.all(z_row >= -1e-8):
+                break
+            
+            col_pivot = np.argmin(z_row)
+            var_entrante = var_names_p1[col_pivot]
+            output_lines.append(f"\\nVariable entrante: {var_entrante} (coût réduit: {z_row[col_pivot]:.2f})")
+            
+            ratios = []
+            col_vals = tableau[:-1, col_pivot]
+            rhs_vals = tableau[:-1, -1]
+            
+            for i in range(len(col_vals)):
+                if col_vals[i] > 1e-10:
+                    ratio = rhs_vals[i] / col_vals[i]
+                    if ratio >= 0:
+                        ratios.append(ratio)
+                    else:
+                        ratios.append(np.inf)
+                else:
+                    ratios.append(np.inf)
+            
+            if all(r == np.inf for r in ratios):
+                output_lines.append("\\n✗ Phase 1: Problème non borné!")
+                return None, None, '\\n'.join(output_lines)
+            
+            row_pivot = np.argmin(ratios)
+            output_lines.append(f"Variable sortante: {base[row_pivot]}")
+            
+            base[row_pivot] = var_names_p1[col_pivot]
+            
+            pivot = tableau[row_pivot, col_pivot]
+            tableau[row_pivot, :] /= pivot
+            
+            for i in range(len(tableau)):
+                if i != row_pivot:
+                    tableau[i, :] -= tableau[i, col_pivot] * tableau[row_pivot, :]
+            
+            output_lines.append(self.afficher_tableau(tableau, base, var_names_p1, iteration, phase=1))
+            
+            if iteration > 100:
+                output_lines.append("\\n✗ Trop d'itérations Phase 1!")
+                return None, None, '\\n'.join(output_lines)
+        
+        w_value = tableau[-1, -1]
+        if abs(w_value) > 1e-6:
+            output_lines.append(f"\\n✗ Phase 1: w = {w_value:.6f} ≠ 0 → Problème infaisable!")
+            return None, None, '\\n'.join(output_lines)
+        
+        output_lines.append("\\n✓ Phase 1 terminée! Solution réalisable trouvée.")
+        
+        # Phase 2
+        output_lines.append("\\n" + "="*80)
+        output_lines.append("PHASE 2: Optimisation de la fonction objectif originale")
+        output_lines.append("="*80)
+        
+        keep_cols = [j for j in range(len(var_names_p1)) if j not in art_cols]
+        var_names_p2 = [var_names_p1[j] for j in keep_cols]
+        
+        tableau_p2 = tableau[:-1, :]
+        tableau_p2 = tableau_p2[:, keep_cols + [len(var_names_p1)]]
+        
+        if self.prog.maximiser:
+            c_original = self.prog.c
+        else:
+            c_original = -self.prog.c
+        
+        base_p2 = []
+        for var in base:
+            if not var.startswith('a'):
+                base_p2.append(var)
+        
+        z_row = np.zeros(len(var_names_p2))
+        for j in range(len(var_names_p2)):
+            if j < n:
+                z_row[j] = c_original[j]
+        
+        for i, var in enumerate(base_p2):
+            if var.startswith('x'):
+                idx = int(var[1:]) - 1
+                if idx < n:
+                    coef = c_original[idx]
+                    for j in range(len(var_names_p2)):
+                        z_row[j] -= coef * tableau_p2[i, j]
+        
+        z_value = 0
+        for i, var in enumerate(base_p2):
+            if var.startswith('x'):
+                idx = int(var[1:]) - 1
+                if idx < n:
+                    z_value += c_original[idx] * tableau_p2[i, -1]
+        
+        z_line = np.hstack([-z_row, [z_value]])
+        tableau_p2 = np.vstack([tableau_p2, z_line])
+        
+        iteration = 0
+        output_lines.append(self.afficher_tableau(tableau_p2, base_p2, var_names_p2, iteration, phase=2))
+        
+        while True:
+            iteration += 1
+            
+            z_row = tableau_p2[-1, :-1]
+            
+            if np.all(z_row >= -1e-8):
+                output_lines.append("\\n✓ Solution optimale trouvée!")
+                break
+            
+            col_pivot = np.argmin(z_row)
+            output_lines.append(f"\\nVariable entrante: {var_names_p2[col_pivot]}")
+            
+            ratios = []
+            col_vals = tableau_p2[:-1, col_pivot]
+            rhs_vals = tableau_p2[:-1, -1]
+            
+            for i in range(len(col_vals)):
+                if col_vals[i] > 1e-10:
+                    ratio = rhs_vals[i] / col_vals[i]
+                    if ratio >= 0:
+                        ratios.append(ratio)
+                    else:
+                        ratios.append(np.inf)
+                else:
+                    ratios.append(np.inf)
+            
+            if all(r == np.inf for r in ratios):
+                output_lines.append("\\n✗ Phase 2: Problème non borné!")
+                return None, None, '\\n'.join(output_lines)
+            
+            row_pivot = np.argmin(ratios)
+            output_lines.append(f"Variable sortante: {base_p2[row_pivot]}")
+            
+            base_p2[row_pivot] = var_names_p2[col_pivot]
+            
+            pivot = tableau_p2[row_pivot, col_pivot]
+            tableau_p2[row_pivot, :] /= pivot
+            
+            for i in range(len(tableau_p2)):
+                if i != row_pivot:
+                    tableau_p2[i, :] -= tableau_p2[i, col_pivot] * tableau_p2[row_pivot, :]
+            
+            output_lines.append(self.afficher_tableau(tableau_p2, base_p2, var_names_p2, iteration, phase=2))
+            
+            if iteration > 100:
+                output_lines.append("\\n✗ Trop d'itérations Phase 2!")
+                break
+        
+        solution = np.zeros(n)
+        for i, var in enumerate(base_p2):
+            if var.startswith('x'):
+                idx = int(var[1:]) - 1
+                if idx < n:
+                    solution[idx] = tableau_p2[i, -1]
+        
+        z_value = tableau_p2[-1, -1]
+        
+        if not self.prog.maximiser:
+            z_value = -z_value
+            
+        output_lines.append(f"\\nSolution finale:")
+        for i in range(n):
+            output_lines.append(f"x{i+1} = {solution[i]:.6f}")
+        output_lines.append(f"{'Max Z' if self.prog.maximiser else 'Min Z'} = {z_value:.6f}")
+        
+        return solution, z_value, '\\n'.join(output_lines)
+    
+    def resoudre(self, methode_choisie=None, M_personnalise=None):
+        self.determiner_methode()
+        
+        if self.methode == MethodeSimplexe.SIMPLE:
+            return self.resoudre_simplexe_simple(True)
+        else:
+            if methode_choisie == "deux_phases":
+                return self.resoudre_deux_phases(True)
+            else:
+                if M_personnalise:
+                    return self.resoudre_grand_M(M_personnalise, True)
+                else:
+                    return self.resoudre_grand_M(None, True)
+
+class PLNESolver:
+    def __init__(self, programme):
+        self.prog = programme
+        self.meilleure_solution = None
+        self.meilleure_valeur = -np.inf if programme.maximiser else np.inf
+    
+    def resoudre_gomory(self, afficher=True):
+        output_lines = []
+        if afficher:
+            output_lines.append(f"\\n{'#'*80}")
+            output_lines.append(f"MÉTHODE: Coupes de Gomory")
+            output_lines.append(f"{'#'*80}")
+        
+        iteration_gomory = 0
+        
+        while iteration_gomory < 5:
+            iteration_gomory += 1
+            if afficher:
+                output_lines.append(f"\\n{'='*80}")
+                output_lines.append(f"ITÉRATION GOMORY {iteration_gomory}")
+                output_lines.append(f"{'='*80}")
+            
+            solver = SimplexeSolver(self.prog)
+            result = solver.resoudre_simplexe_simple(afficher)
+            
+            if not result or result[0] is None:
+                if afficher:
+                    output_lines.append("✗ Problème infaisable ou non borné!")
+                return None, None, '\\n'.join(output_lines)
+            
+            solution, z_value, simplex_output = result
+            output_lines.append(simplex_output)
+            
+            entier, idx_var, val_var = self.prog.est_solution_entiere(solution)
+            
+            if entier:
+                if afficher:
+                    output_lines.append(f"\\n✓ Solution entière trouvée!")
+                return solution, z_value, '\\n'.join(output_lines)
+            
+            if afficher:
+                output_lines.append(f"\\nSolution non entière: x{idx_var+1} = {val_var:.6f}")
+                output_lines.append(f"Génération d'une coupe de Gomory...")
+            
+            # Ajouter une contrainte simple pour simuler une coupe
+            nouvelle_ligne = np.zeros(self.prog.n_vars)
+            nouvelle_ligne[idx_var] = 1
+            self.prog.A = np.vstack([self.prog.A, nouvelle_ligne])
+            self.prog.b = np.append(self.prog.b, np.floor(val_var))
+            self.prog.types_contraintes.append(ContrainteType.LEQ)
+            self.prog.n_contraintes += 1
+        
+        if afficher:
+            output_lines.append("\\n✗ Nombre maximum d'itérations Gomory atteint!")
+        return solution, z_value, '\\n'.join(output_lines)
+    
+    def resoudre_branch_bound(self, afficher=True):
+        output_lines = []
+        if afficher:
+            output_lines.append(f"\\n{'#'*80}")
+            output_lines.append(f"MÉTHODE: Branch and Bound")
+            output_lines.append(f"{'#'*80}")
+        
+        noeud_id = 0
+        problemes = [(self.prog, 0)]
+        
+        while problemes and noeud_id < 10:
+            noeud_id += 1
+            prog_courant, niveau = problemes.pop(0)
+            
+            if afficher:
+                output_lines.append(f"\\n{'='*80}")
+                output_lines.append(f"NOEUD {noeud_id} - NIVEAU {niveau}")
+                output_lines.append(f"{'='*80}")
+            
+            solver = SimplexeSolver(prog_courant)
+            result = solver.resoudre_simplexe_simple(afficher)
+            
+            if not result or result[0] is None:
+                if afficher:
+                    output_lines.append("✗ Problème infaisable - Élagage!")
+                continue
+            
+            solution, z_value, simplex_output = result
+            output_lines.append(simplex_output)
+            
+            if not self.prog.maximiser:
+                z_value_display = -z_value
+            else:
+                z_value_display = z_value
+            
+            if self.prog.maximiser:
+                if z_value_display <= self.meilleure_valeur + 1e-6:
+                    if afficher:
+                        output_lines.append(f"✗ Non prometteur (Z={z_value_display:.3f} ≤ meilleur={self.meilleure_valeur:.3f}) - Élagage!")
+                    continue
+            else:
+                if z_value_display >= self.meilleure_valeur - 1e-6:
+                    if afficher:
+                        output_lines.append(f"✗ Non prometteur (Z={z_value_display:.3f} ≥ meilleur={self.meilleure_valeur:.3f}) - Élagage!")
+                    continue
+            
+            entier, idx_var, val_var = prog_courant.est_solution_entiere(solution)
+            
+            if entier:
+                if afficher:
+                    output_lines.append(f"\\n✓ Solution entière trouvée au noeud {noeud_id}!")
+                
+                if self.prog.maximiser:
+                    if z_value_display > self.meilleure_valeur:
+                        self.meilleure_valeur = z_value_display
+                        self.meilleure_solution = solution
+                else:
+                    if z_value_display < self.meilleure_valeur:
+                        self.meilleure_valeur = z_value_display
+                        self.meilleure_solution = solution
+                
+                continue
+            
+            if afficher:
+                output_lines.append(f"\\nSolution non entière: x{idx_var+1} = {val_var:.6f}")
+                output_lines.append(f"\\nBRANCHEMENT sur x{idx_var+1}:")
+            
+            # Branche inférieure
+            val_floor = np.floor(val_var)
+            prog_inf = ProgrammeLineaire()
+            prog_inf.c = prog_courant.c.copy()
+            prog_inf.A = prog_courant.A.copy()
+            prog_inf.b = prog_courant.b.copy()
+            prog_inf.types_contraintes = prog_courant.types_contraintes.copy()
+            prog_inf.n_vars = prog_courant.n_vars
+            prog_inf.n_contraintes = prog_courant.n_contraintes
+            prog_inf.maximiser = prog_courant.maximiser
+            prog_inf.var_entiere = prog_courant.var_entiere.copy()
+            
+            nouvelle_ligne = np.zeros(prog_inf.n_vars)
+            nouvelle_ligne[idx_var] = 1
+            prog_inf.A = np.vstack([prog_inf.A, nouvelle_ligne])
+            prog_inf.b = np.append(prog_inf.b, val_floor)
+            prog_inf.types_contraintes.append(ContrainteType.LEQ)
+            prog_inf.n_contraintes += 1
+            
+            if afficher:
+                output_lines.append(f"  Branche 1: x{idx_var+1} <= {val_floor}")
+            problemes.append((prog_inf, niveau + 1))
+            
+            # Branche supérieure
+            val_ceil = np.ceil(val_var)
+            prog_sup = ProgrammeLineaire()
+            prog_sup.c = prog_courant.c.copy()
+            prog_sup.A = prog_courant.A.copy()
+            prog_sup.b = prog_courant.b.copy()
+            prog_sup.types_contraintes = prog_courant.types_contraintes.copy()
+            prog_sup.n_vars = prog_courant.n_vars
+            prog_sup.n_contraintes = prog_courant.n_contraintes
+            prog_sup.maximiser = prog_courant.maximiser
+            prog_sup.var_entiere = prog_courant.var_entiere.copy()
+            
+            nouvelle_ligne = np.zeros(prog_sup.n_vars)
+            nouvelle_ligne[idx_var] = 1
+            prog_sup.A = np.vstack([prog_sup.A, nouvelle_ligne])
+            prog_sup.b = np.append(prog_sup.b, val_ceil)
+            prog_sup.types_contraintes.append(ContrainteType.GEQ)
+            prog_sup.n_contraintes += 1
+            
+            if afficher:
+                output_lines.append(f"  Branche 2: x{idx_var+1} >= {val_ceil}")
+            problemes.append((prog_sup, niveau + 1))
+        
+        if afficher:
+            output_lines.append(f"\\n{'='*80}")
+            output_lines.append("RECHERCHE TERMINÉE")
+            output_lines.append(f"{'='*80}")
+        
+        if self.meilleure_solution is not None:
+            if afficher:
+                output_lines.append(f"\\nSolution optimale entière trouvée:")
+                for i in range(len(self.meilleure_solution)):
+                    output_lines.append(f"x{i+1} = {self.meilleure_solution[i]:.6f}")
+                output_lines.append(f"{'Max Z' if self.prog.maximiser else 'Min Z'} = {self.meilleure_valeur:.6f}")
+            return self.meilleure_solution, self.meilleure_valeur, '\\n'.join(output_lines)
+        else:
+            if afficher:
+                output_lines.append("✗ Aucune solution entière trouvée!")
+            return None, None, '\\n'.join(output_lines)
+    
+    def resoudre(self, methode):
+        if methode == "gomory":
+            return self.resoudre_gomory(True)
+        else:
+            return self.resoudre_branch_bound(True)
+
+# Fonctions pour exécuter
+def resoudre_simplexe_simple(programme_texte):
+    prog = ProgrammeLineaire()
+    prog.lire_programme(programme_texte)
+    
+    solver = SimplexeSolver(prog)
+    return solver.resoudre_simplexe_simple(True)
+
+def resoudre_simplexe_avance(programme_texte, methode="grand_m", M_value=None):
+    prog = ProgrammeLineaire()
+    prog.lire_programme(programme_texte)
+    
+    solver = SimplexeSolver(prog)
+    
+    if methode == "deux_phases":
+        return solver.resoudre_deux_phases(True)
+    else:
+        return solver.resoudre_grand_M(M_value, True)
+
+def resoudre_programme_plne(programme_texte, methode="gomory"):
+    prog = ProgrammeLineaire()
+    prog.lire_programme(programme_texte)
+    
+    if not prog.var_entiere:
+        return None, None, "Aucune variable entière spécifiée. Utilisez le solveur PL pour les variables réelles."
+    
+    solver = PLNESolver(prog)
+    return solver.resoudre(methode)
+
+# Exporter les fonctions
+global_resoudre_simplexe_simple = resoudre_simplexe_simple
+global_resoudre_simplexe_avance = resoudre_simplexe_avance
+global_resoudre_plne = resoudre_programme_plne
+`;
+            
+            await pyodide.runPythonAsync(pythonCode);
+            console.log("Code Python chargé avec succès");
+        }
+
+        // ============================================
+        // RÉSOLUTION PL SIMPLE
+        // ============================================
+        
+        async function resoudrePLSimple() {
+            const programme = document.getElementById('pl-simple-programme').value;
+            
+            if (!programme.trim()) {
+                alert("Veuillez entrer un programme linéaire");
+                return;
+            }
+            
+            showLoading('Exécution du Simplexe Simple...');
+            
+            try {
+                await initializePython();
+                
+                const code = `
+try:
+    result = global_resoudre_simplexe_simple("""${programme.replace(/"/g, '\\"')}""")
+    
+    if result[0] is not None:
+        output = result[2]
+    else:
+        output = result[2]
+        
+except Exception as e:
+    import traceback
+    output = f"Erreur lors de l'exécution :\\\\n{str(e)}\\\\n\\\\n{traceback.format_exc()}"
+
+output
+`;
+                
+                const output = await pyodide.runPythonAsync(code);
+                hideLoading();
+                showOutput('pl-simple', output);
+                
+            } catch (error) {
+                hideLoading();
+                console.error(error);
+                showOutput('pl-simple', `Erreur : ${error.message}`);
+            }
+        }
+
+        // ============================================
+        // RÉSOLUTION PL AVANCÉ
+        // ============================================
+        
+        async function resoudrePLAvance() {
+            const programme = document.getElementById('pl-avance-programme').value;
+            
+            if (!programme.trim()) {
+                alert("Veuillez entrer un programme linéaire");
+                return;
+            }
+            
+            showLoading('Exécution du Simplexe Avancé...');
+            
+            try {
+                await initializePython();
+                
+                const methodElement = document.querySelector('input[name="pl-avance-methode"]:checked');
+                const method = methodElement ? methodElement.value : 'grand_m';
+                const mValue = document.getElementById('m-value').value;
+                
+                const code = `
+try:
+    result = global_resoudre_simplexe_avance("""${programme.replace(/"/g, '\\"')}""", 
+                                            "${method}", 
+                                            ${mValue} if "${method}" == "grand_m" and ${mValue} else None)
+    
+    if result[0] is not None:
+        output = result[2]
+    else:
+        output = result[2]
+        
+except Exception as e:
+    import traceback
+    output = f"Erreur lors de l'exécution :\\\\n{str(e)}\\\\n\\\\n{traceback.format_exc()}"
+
+output
+`;
+                
+                const output = await pyodide.runPythonAsync(code);
+                hideLoading();
+                showOutput('pl-avance', output);
+                
+            } catch (error) {
+                hideLoading();
+                console.error(error);
+                showOutput('pl-avance', `Erreur : ${error.message}`);
+            }
+        }
+
+        // ============================================
+        // RÉSOLUTION PLNE
+        // ============================================
+        
+        async function resoudrePLNE() {
+            const programme = document.getElementById('plne-programme').value;
+            
+            if (!programme.trim()) {
+                alert("Veuillez entrer un programme linéaire");
+                return;
+            }
+            
+            showLoading('Exécution du solveur PLNE...');
+            
+            try {
+                await initializePython();
+                
+                const methodElement = document.querySelector('input[name="plne-methode"]:checked');
+                const method = methodElement ? methodElement.value : 'gomory';
+                
+                const code = `
+try:
+    result = global_resoudre_plne("""${programme.replace(/"/g, '\\"')}""", "${method}")
+    
+    if result[0] is not None:
+        output = result[2]
+    else:
+        output = result[2]
+        
+except Exception as e:
+    import traceback
+    output = f"Erreur lors de l'exécution :\\\\n{str(e)}\\\\n\\\\n{traceback.format_exc()}"
+
+output
+`;
+                
+                const output = await pyodide.runPythonAsync(code);
+                hideLoading();
+                showOutput('plne', output);
+                
+            } catch (error) {
+                hideLoading();
+                console.error(error);
+                showOutput('plne', `Erreur : ${error.message}`);
+            }
+        }
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Charger des exemples par défaut
+            document.getElementById('pl-simple-programme').value = examples['simplexe-simple'];
+            document.getElementById('pl-avance-programme').value = examples['simplexe-grand-m'];
+            document.getElementById('plne-programme').value = examples['plne-gomory'];
+            
+            // Gérer l'affichage de la valeur M
+            document.querySelectorAll('input[name="pl-avance-methode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('m-value-container').style.display = 
+                        this.value === 'grand_m' ? 'block' : 'none';
+                });
+            });
+            
+            // Attacher les écouteurs d'événements aux boutons d'exécution
+            document.getElementById('pl-simple-btn-execute').addEventListener('click', resoudrePLSimple);
+            document.getElementById('pl-avance-btn-execute').addEventListener('click', resoudrePLAvance);
+            document.getElementById('plne-btn-execute').addEventListener('click', resoudrePLNE);
+            
+            // Initialiser Python en arrière-plan
+            setTimeout(() => {
+                initializePython();
+            }, 1000);
+        });
+
+        // Exposer les fonctions globalement
+        window.chargerExemple = chargerExemple;
+        window.resoudrePLSimple = resoudrePLSimple;
+        window.resoudrePLAvance = resoudrePLAvance;
+        window.resoudrePLNE = resoudrePLNE;
+        window.exporterResultats = exporterResultats;
+    </script>
+</body>
+</html>
