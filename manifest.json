@@ -1,5 +1,6 @@
 {
-  "name": "Solveur LP - Simplexe &amp; PLNE",
+  "id": "/PLENESolve/",
+  "name": "Solveur LP - Simplexe & PLNE",
   "short_name": "Solveur LP",
   "description": "Solveur de programmes linéaires avec méthodes Simplexe et PLNE",
   "start_url": "/",
@@ -19,6 +20,36 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-haut-desktop.png",
+      "sizes": "1885x1152",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interface du solveur avant exécution sur ordinateur"
+    },
+    {
+      "src": "icons/screenshot-bas-part1-desktop.png",
+      "sizes": "1885x1152",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interface du solveur après exécution partie haut sur ordinateur"
+    },
+    {
+      "src": "icons/screenshot-bas-part2-desktop.png",
+      "sizes": "1885x1152",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interface du solveur après exécution partie bas sur ordinateur"
+    },
+    {
+      "src": "icons/screenshot-avance-desktop.png",
+      "sizes": "1906x1329",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interface du solveur avant exécution méthode avancée sur ordinateur"
     }
   ]
 }
