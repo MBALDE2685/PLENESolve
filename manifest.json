@@ -16,7 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "icons/icon-192-m.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
@@ -28,7 +28,7 @@
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512-m.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -48,7 +48,7 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "Interface du solveur après exécution partie haut sur ordinateur"
-    },
+    },  
     {
       "src": "icons/screenshot-bas-part2-desktop.png",
       "sizes": "1885x1152",
@@ -62,6 +62,34 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "Interface du solveur avant exécution méthode avancée sur ordinateur"
+    },
+    {
+      "src": "icons/screenshot-plus-haut-mobile.png",
+      "sizes": "1080x2400", 
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Solveur LP sur smartphone - Vue principale"
+    },
+    {
+      "src": "icons/screenshot-haut-mobile.png",
+      "sizes": "1080x2400",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Solveur LP sur smartphone"
+    },
+    {
+      "src": "icons/screenshot-haut-result-mobile.png",
+      "sizes": "1080x2400",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Résultats de l'optimisation sur smartphone"
+    },
+    {
+      "src": "icons/screenshot-bas-result-mobile.png",
+      "sizes": "1080x2400",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Résultats de l'optimisation sur smartphone"
     }
   ]
 }
