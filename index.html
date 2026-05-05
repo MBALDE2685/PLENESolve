@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#3498db">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
+    <!-- Chargement de l'API Google Ads -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-app-pub-4448155152055016" crossorigin="anonymous"></script>
+
     <script>
       // Enregistrement du Service Worker
       if ('serviceWorker' in navigator) {
@@ -320,6 +323,28 @@
             border-left: 4px solid #3498db;
         }
 
+        /* Style pour les bannières publicitaires */
+        .ad-container {
+            margin: 20px auto;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .ad-label {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .ad-separator {
+            border-top: 1px solid #dee2e6;
+            margin: 20px 0;
+        }
+
         @media (max-width: 768px) {
             .container { padding: 10px; }
             .header h1 { font-size: 2rem; }
@@ -329,6 +354,7 @@
             .btn { width: 100%; }
             .example-buttons { grid-template-columns: 1fr; }
             .export-buttons { flex-direction: column; }
+            .ad-container { margin: 15px auto; }
         }
     </style>
 </head>
@@ -395,6 +421,21 @@ x1 >= 0, x2 >= 0"></textarea>
                         </button>
                     </div>
                 </div>
+                
+                <!-- Bannière pub après la zone de saisie -->
+                <div class="ad-container">
+                    <div class="ad-label">Publicité</div>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-app-pub-4448155152055016"
+                         data-ad-slot="4633192804"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                <div class="ad-separator"></div>
                 
                 <div id="pl-simple-output" class="card" style="display: none;">
                     <h2><i class="fas fa-terminal"></i> Résultats - Simplexe Simple</h2>
@@ -463,6 +504,21 @@ x1 >= 0, x2 >= 0"></textarea>
                     </div>
                 </div>
                 
+                <!-- Bannière pub après la zone de saisie -->
+                <div class="ad-container">
+                    <div class="ad-label">Publicité</div>
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-app-pub-4448155152055016"
+                         data-ad-slot="4633192804"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                <div class="ad-separator"></div>
+                
                 <div id="pl-avance-output" class="card" style="display: none;">
                     <h2><i class="fas fa-terminal"></i> Résultats - Simplexe Avancé</h2>
                     <div class="output-container" id="pl-avance-output-content"></div>
@@ -523,6 +579,21 @@ x1 entier, x2 entier"></textarea>
                 </div>
             </div>
             
+            <!-- Bannière pub après les options -->
+            <div class="ad-container">
+                <div class="ad-label">Publicité</div>
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-app-pub-4448155152055016"
+                     data-ad-slot="4633192804"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <div class="ad-separator"></div>
+            
             <div id="plne-output" class="card" style="display: none;">
                 <h2><i class="fas fa-terminal"></i> Résultats</h2>
                 <div class="output-container" id="plne-output-content"></div>
@@ -543,9 +614,64 @@ x1 entier, x2 entier"></textarea>
                 <h2><i class="fas fa-question-circle"></i> Guide d'utilisation</h2>
                 
                 <div class="help-container">
-                    <!-- Contenu aide inchangé -->
+                    <div class="help-section">
+                        <h3>Syntaxe des programmes linéaires</h3>
+                        <p><strong>Fonction objectif :</strong> Commencez par "Maximiser:" ou "Minimiser:"</p>
+                        <div class="code-example">
+                            Maximiser: 3x1 + 5x2
+                        </div>
+                        
+                        <p><strong>Contraintes :</strong> Utilisez &lt;=, &gt;= ou =</p>
+                        <div class="code-example">
+                            x1 + 2x2 <= 10<br>
+                            3x1 - x2 >= 5<br>
+                            2x1 + x2 = 8
+                        </div>
+                        
+                        <p><strong>Variables :</strong> elles sont supposées non négatives par défaut. Pour les variables entières, ajoutez une ligne :</p>
+                        <div class="code-example">
+                            x1 entier, x2 entier
+                        </div>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h3>Méthodes disponibles</h3>
+                        <ul>
+                            <li><strong>Simplexe Simple :</strong> Pour problèmes avec contraintes ≤ uniquement</li>
+                            <li><strong>Grand M :</strong> Pour problèmes avec contraintes ≥ ou =</li>
+                            <li><strong>Deux Phases :</strong> Alternative pour problèmes avec contraintes ≥ ou =</li>
+                            <li><strong>Coupes de Gomory :</strong> Résout les PLNE par ajout de coupes</li>
+                            <li><strong>Branch and Bound :</strong> Résout les PLNE par exploration arborescente</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h3>Exemple complet</h3>
+                        <div class="code-example">
+                            Maximiser: 7x1 + 5x2<br>
+                            3x1 + 2x2 <= 10<br>
+                            2x1 + 4x2 <= 11<br>
+                            x1 >= 0, x2 >= 0<br>
+                            x1 entier, x2 entier
+                        </div>
+                        <p>Cliquez sur "Exécuter" pour résoudre ce problème avec la méthode choisie.</p>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Bannière pub avant le footer -->
+        <div class="ad-container" style="margin-bottom: 20px;">
+            <div class="ad-label">Publicité</div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-app-pub-4448155152055016"
+                 data-ad-slot="4633192804"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
 
         <!-- Overlay de chargement -->
@@ -556,7 +682,7 @@ x1 entier, x2 entier"></textarea>
             </div>
         </div>
 
-        <footer class="footer" style="text-align: center; margin-top: 50px; color: #666;">
+        <footer class="footer" style="text-align: center; margin-top: 30px; color: #666;">
             <p>Solveur de Programmes Linéaires - Implémentation complète des algorithmes</p>
             <p style="font-size: 0.9rem; margin-top: 5px;">© 2024 - Tous droits réservés</p>
         </footer>
